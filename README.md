@@ -1,6 +1,30 @@
 # kfreestyle2d
 Unofficial Kinesis Freestyle 2 Userspace Linux Driver
 
+**SECURITY NOTICE**: This program must run as root in order to open a raw
+device file. The author is not a security expert, but has made a concerted
+effort to make the code simple and readable. Please audit it before use.
+
+The Kinesis Freestyle 2 keyboard is a fantastic split keyboard for people
+who don't want RSI in their wrists. It has four multimedia keys on
+F8-F11 that do not work in Linux. This is a simple program that enables
+those keys. If you care how it works, keep reading. If not, skip to the
+Build instructions.
+
+## How it works
+
+The multimedia keys seem not to be understood properly by the `hid-generic`
+kernel module that usually interprets events from HID (Human Interface Devices).
+They are understood by the `hidusb` kernel module though, so you can read the
+raw HID file to get the stream of bytes coming from the USB device.
+
+This program uses a special kernel interface called `uinput` that allows drivers
+for input devices to run as user programs. kfreestyle2d simply opens the raw byte
+stream from the keyboard's special function keys. When it reads a keypress, it
+translates the HID Usage ID of the key that it read into a keypress that the
+`uinput` system understands. This allows the kernel to interpret the keypress
+correctly and dispatch it to userspace programs like Xorg properly.
+
 ## Build
 `make`
 
