@@ -1,9 +1,7 @@
 # kfreestyle2d
 Unofficial Kinesis Freestyle 2 Userspace Linux Driver
 
-**SECURITY NOTICE**: This program must run as root in order to open a raw
-device file. The author is not a security expert, but has made a concerted
-effort to make the code simple and readable. Please audit it before use.
+**SECURITY NOTICE**: This program should not run as root! Read the Install instructions for details on how to set the correct permissions on the device files that the driver opens so that it can do so with normal user permissions.
 
 The Kinesis Freestyle 2 keyboard is a fantastic split keyboard for people
 who don't want RSI in their wrists. It has four multimedia keys on
@@ -27,6 +25,17 @@ correctly and dispatch it to userspace programs like Xorg properly.
 
 ## Build
 `make`
+
+## Install
+
+To give the driver the ability to create a virtual device, you can run the following to grant your user group the ability to read and write the `/dev/uinput` device file. Modify this as appropriate for your machine if you structure your permissions differently:
+
+```bash
+echo KERNEL==\"uinput\", GROUP=\"$USER\", MODE:=\"0660\" | sudo tee -a /etc/udev/rules.d/99-$USER.rules
+echo KERNEL==\"hidraw\*\", ATTRS\{idVendor\}==\"058f\", ATTRS\{idProduct\}==\"9410\", MODE:=\"0660\", GROUP=\"$USER\" | sudo tee -a /etc/udev/rules.d/99-$USER.rules
+
+sudo udevadm trigger
+```
 
 ## Run
 The driver expects to be given the path to an HID raw input device
