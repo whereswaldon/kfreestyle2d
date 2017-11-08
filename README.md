@@ -55,7 +55,7 @@ key before trying to use these. If the command exits when you type a special
 key, this is the file you're looking for.
 
 To start the driver, run:
-`sudo ./kfreestyle2d /dev/hidrawX` where X is the number of the raw input device
+`./kfreestyle2d /dev/hidrawX` where X is the number of the raw input device
 for the special keys.
 
 When the driver is running, it should create a new `/dev/input/eventXX` file,
