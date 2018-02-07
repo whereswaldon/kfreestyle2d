@@ -24,11 +24,17 @@ translates the HID Usage ID of the key that it read into a keypress that the
 correctly and dispatch it to userspace programs like Xorg properly.
 
 ## Build
+
 `make`
 
 ## Install
 
-To give the driver the ability to create a virtual device, you can run the following to grant your user group the ability to read and write the `/dev/uinput` device file. Modify this as appropriate for your machine if you structure your permissions differently:
+To give the driver the ability to create a virtual device, you can run the 
+following to grant your user group the ability to read and write the 
+`/dev/uinput` device file. We also need to allow the driver to read from the 
+raw input file from the keyboard. The following commands will achieve this. 
+Modify this as appropriate for your machine if you structure your permissions 
+differently:
 
 ```bash
 echo KERNEL==\"uinput\", GROUP=\"$USER\", MODE:=\"0660\" | sudo tee -a /etc/udev/rules.d/99-$USER.rules
@@ -38,6 +44,11 @@ sudo udevadm trigger
 ```
 
 ## Run
+
+First, ensure that the `uinput` kernel module is loaded with `lsmod | grep uinput`. If
+that does not return a line containing uinput, run `sudo modprobe uinput` to load
+the userspace input module into your kernel.
+
 The driver expects to be given the path to an HID raw input device
 that corresponds to the special function keys of a Kinesis Freestyle 2.
 
