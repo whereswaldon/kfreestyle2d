@@ -41,8 +41,17 @@ void emit(int fd, int type, int code, int val) {
 
 // Assume fd is the file descriptor of a raw hid file for
 // a Kinesis Freestyle 2
+// Use UDEV4 style initialization
 void watch(int rawfd) {
+
+    // If we're on UInput 5, then we can use the new style initialization. Both structures have the
+    // same fields that we care about, so they can beuse interchangeably here.
+    #if UINPUT_VERSION>=5
     struct uinput_setup usetup;
+    #else
+    struct uinput_user_dev usetup;
+    #endif
+    
     // Open the uinput device file for writing
     // Ensure that our writes do not block
     int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
@@ -62,7 +71,12 @@ void watch(int rawfd) {
     strcpy(usetup.name, "KB800 Kinesis Freestyle");
 
     // Create virtual device
+    #if UINPUT_VERSION>=5
     ioctl(fd, UI_DEV_SETUP, &usetup);
+    #else
+    fprintf(stderr, "Warning: uinput is out of date, using old style initialization. This is unsupported and may be broken.\n");
+    write(fd, &usetup, sizeof(usetup));
+    #endif
     ioctl(fd, UI_DEV_CREATE);
 
     unsigned char data[KINESIS_PACKET_SIZE];
