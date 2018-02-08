@@ -74,7 +74,7 @@ void watch(int rawfd) {
     #if UINPUT_VERSION>=5
     ioctl(fd, UI_DEV_SETUP, &usetup);
     #else
-    fprintf(stderr, "Warning: uinput is out of date, using old style initialization. This is unsupported and may be broken.\n")
+    fprintf(stderr, "Warning: uinput is out of date, using old style initialization. This is unsupported and may be broken.\n");
     write(fd, &usetup, sizeof(usetup));
     #endif
     ioctl(fd, UI_DEV_CREATE);
