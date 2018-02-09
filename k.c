@@ -36,7 +36,9 @@ void emit(int fd, int type, int code, int val) {
     ie.time.tv_sec = 0;
     ie.time.tv_usec = 0;
 
-    write(fd, &ie, sizeof(ie));
+    if (write(fd, &ie, sizeof(ie)) < 0) {
+        perror("Error emitting keypress");
+    }
 }
 
 // Assume fd is the file descriptor of a raw hid file for
@@ -51,17 +53,37 @@ void watch(int rawfd) {
     #else
     struct uinput_user_dev usetup;
     #endif
-    
+
+    int ioctl_err;
     // Open the uinput device file for writing
     // Ensure that our writes do not block
     int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
+    if (fd < 0) {
+        perror("Unable to open uinput");
+        exit(4);
+    }
 
     // Enable needed keys
-    ioctl(fd, UI_SET_EVBIT, EV_KEY);
-    ioctl(fd, UI_SET_KEYBIT, KEY_MUTE);
-    ioctl(fd, UI_SET_KEYBIT, KEY_CALC);
-    ioctl(fd, UI_SET_KEYBIT, KEY_VOLUMEDOWN);
-    ioctl(fd, UI_SET_KEYBIT, KEY_VOLUMEUP);
+    if (ioctl(fd, UI_SET_EVBIT, EV_KEY) < 0) {
+        perror("Unable to configure virtual keyboard");
+        exit(8);
+    }
+    if (ioctl(fd, UI_SET_KEYBIT, KEY_MUTE) < 0) {
+        perror("Unable to configure virtual mute key");
+        exit(8);
+    }
+    if (ioctl(fd, UI_SET_KEYBIT, KEY_CALC) < 0) {
+        perror("Unable to configure virtual calc key");
+        exit(8);
+    }
+    if (ioctl(fd, UI_SET_KEYBIT, KEY_VOLUMEDOWN) < 0) {
+        perror("Unable to configure virtual volume down key");
+        exit(8);
+    }
+    if (ioctl(fd, UI_SET_KEYBIT, KEY_VOLUMEUP) < 0) {
+        perror("Unable to configure virtual volume up key");
+        exit(8);
+    }
 
     // Configure virtual device
     memset(&usetup, 0, sizeof(usetup));
@@ -72,17 +94,27 @@ void watch(int rawfd) {
 
     // Create virtual device
     #if UINPUT_VERSION>=5
-    ioctl(fd, UI_DEV_SETUP, &usetup);
+    ioctl_err = ioctl(fd, UI_DEV_SETUP, &usetup);
     #else
     fprintf(stderr, "Warning: uinput is out of date, using old style initialization. This is unsupported and may be broken.\n");
-    write(fd, &usetup, sizeof(usetup));
+    ioctl_err = write(fd, &usetup, sizeof(usetup));
     #endif
-    ioctl(fd, UI_DEV_CREATE);
+    if (ioctl_err < 0) {
+        perror("Unable to finalize virtual device configuration");
+        exit(16);
+    }
+    if (ioctl(fd, UI_DEV_CREATE) < 0) {
+        perror("Unable to create virtual device");
+        exit(32);
+    }
 
     unsigned char data[KINESIS_PACKET_SIZE];
     memset(data, 0, sizeof(data));
     while (1) {
-        read(rawfd, data, sizeof(data));
+        if (read(rawfd, data, sizeof(data)) < 0) {
+            perror("Error reading raw device");
+            break;
+        }
         switch (data[1]) {
             case HID_UID_MUTE:
                 KINESIS_MUTE(fd);
@@ -104,8 +136,14 @@ void watch(int rawfd) {
     }
 
     // Destroy virtual device
-    ioctl(fd, UI_DEV_DESTROY);
-    close(fd);
+    if (ioctl(fd, UI_DEV_DESTROY) < 0) {
+        perror("Unable to destroy virtual device");
+        exit(32);
+    }
+    if (close(fd) < 0) {
+        perror("Error closing uinput file");
+        exit(32);
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -119,9 +157,16 @@ int main(int argc, char* argv[]) {
     devpath = argv[1];
 
     rawfd = open(devpath, O_RDONLY);
+    if (rawfd < 0) {
+        perror("Unable to open raw device file");
+        exit(2);
+    }
 
     watch(rawfd);
 
-    close(rawfd);
+    if (close(rawfd) < 0) {
+        perror("Error closing raw device file");
+        exit(2);
+    }
     return 0;
 }
