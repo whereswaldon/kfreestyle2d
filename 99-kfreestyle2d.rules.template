@@ -1,0 +1,5 @@
+# Make uinput device read/write
+KERNEL=="uinput", GROUP="<<<GROUP>>>", MODE:="0660"
+
+# Make kinesis raw input keys readable
+KERNEL=="hidraw*", ATTRS{idVendor}=="058f", ATTRS{idProduct}=="9410", MODE:="0660", GROUP="<<<GROUP>>>", SYMLINK="kinesis%n", RUN+="/bin/systemctl --no-block start kfreestyle2d.service"

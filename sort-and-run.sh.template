@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec <<<PREFIX>>>/kfreestyle2d/kfreestyle2d $(ls /dev/kinesis* | sort | tail -1)

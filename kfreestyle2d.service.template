@@ -1,0 +1,9 @@
+[Unit]
+Description=Userspace driver for Kinesis Freestyle 2 Keyboard
+
+[Service]
+Type=simple
+Restart=no
+TimeoutSec=1
+Group=<<<GROUP>>>
+ExecStart=<<<PREFIX>>>/kfreestyle2d/sort-and-run.sh
