@@ -6,4 +6,5 @@ Type=simple
 Restart=no
 TimeoutSec=1
 Group=<<<GROUP>>>
+User=<<<GROUP>>>
 ExecStart=<<<PREFIX>>>/kfreestyle2d/sort-and-run.sh

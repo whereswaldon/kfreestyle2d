@@ -26,9 +26,10 @@ script: ./sort-and-run.sh.template directory
 	chmod +x $(INSTALLPATH)/sort-and-run.sh
 	chgrp $(GROUP) $(INSTALLPATH)/sort-and-run.sh
 
-# Add a uinput group to the system
+# Add a uinput user to the system
 group:
 	$(GROUPADD_PATH) -f uinput
+	adduser --system --quiet --ingroup uinput uinput
 
 # Ensure the existence of a directory within the prefix location
 directory:
@@ -43,6 +44,7 @@ binary: directory kfreestyle2d
 refresh:
 	systemctl daemon-reload
 	udevadm control --reload
+	udevadm trigger
 
 # Insert the uinput kernel module and ensure that it is inserted on startup
 module:
