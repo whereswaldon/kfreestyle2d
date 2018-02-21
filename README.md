@@ -9,6 +9,15 @@ F8-F11 that do not work in Linux. This is a simple program that enables
 those keys. If you care how it works, keep reading. If not, skip to the
 Build instructions.
 
+## Supported Systems
+
+`kfreestyle2d` itself only depends on the Linux kernel. If you run Linux with
+`uinput` version 4 or later, you should be fine.
+
+The automatic execution of `kfreestyle2d` currently depends on `udev` and `systemd`.
+If you run a system that uses a different init system or device manager, we'd love
+some help with automatic installation procedures on those systems.
+
 ## How it works
 
 The multimedia keys seem not to be understood properly by the `hid-generic`
@@ -25,25 +34,34 @@ correctly and dispatch it to userspace programs like Xorg properly.
 
 ## Build
 
-`make`
+`make` will create the binary `kfreestyle2d` in the current directory. If you want to try
+it without installing it, skip to the Manual Run section below.
 
 ## Install
 
-To give the driver the ability to create a virtual device, you can run the 
-following to grant your user group the ability to read and write the 
-`/dev/uinput` device file. We also need to allow the driver to read from the 
-raw input file from the keyboard. The following commands will achieve this. 
-Modify this as appropriate for your machine if you structure your permissions 
-differently:
+Please check the makefile before installing. You may wish to adjust the value of `PREFIX` or
+one of the other macros.
 
-```bash
-echo KERNEL==\"uinput\", GROUP=\"$USER\", MODE:=\"0660\" | sudo tee -a /etc/udev/rules.d/99-$USER.rules
-echo KERNEL==\"hidraw\*\", ATTRS\{idVendor\}==\"058f\", ATTRS\{idProduct\}==\"9410\", MODE:=\"0660\", GROUP=\"$USER\" | sudo tee -a /etc/udev/rules.d/99-$USER.rules
+To properly install `kfreestyle2d`, you should be able to simply run `sudo make install`.
+This will:
 
-sudo udevadm trigger
-```
+- Create a directory (default is /usr/local/share/kfreestyle2d) to store the executable and script.
+- Create some udev rules in /etc/udev/rules.d/99-kfreestyle2d.rules
+- Create a new systemd service file in /etc/systemd/system/kfreestyle2d.service
 
-## Run
+Once those things are done, the driver should run automatically when you plug in the keyboard
+and should stop when you unplug it. If you have any problems running this command, please open an
+issue.
+
+Please note that the current setup only supports one Kinesis Freestyle 2. If you want to
+plug multiple Kinesis Freestyle 2 keyboards into the same computer, you'll need to 
+customize the automatic execution accordingly.
+
+## Manual Run
+
+This procedure will work to test whether the userspace driver is working without
+the `udev` and `systemd` automation in place. If you already followed the Install
+directions, you shouldn't need to do this.
 
 First, ensure that the `uinput` kernel module is loaded with `lsmod | grep uinput`. If
 that does not return a line containing uinput, run `sudo modprobe uinput` to load
