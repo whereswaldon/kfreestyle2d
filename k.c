@@ -9,10 +9,35 @@
 
 #define KINESIS_PACKET_SIZE 3
 
-#define HID_UID_MUTE 0xE2
-#define HID_UID_VOL_DOWN 0xEA
-#define HID_UID_VOL_UP 0xE9
-#define HID_UID_CALC 0x92
+#define MUTE KEY_MUTE
+#define VDWN KEY_VOLUMEDOWN
+#define VUP  KEY_VOLUMEUP
+#define CALC KEY_CALC
+#define EJCT KEY_EJECTCLOSECD
+#define PREV KEY_PREVIOUSSONG
+#define PLAY KEY_PLAYPAUSE
+#define NEXT KEY_NEXTSONG
+
+// Maps from events received on the raw hid device to events sent out on uinput device
+const unsigned char mapping[256] = {
+    /*         0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F */
+    /* 0 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 1 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 2 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 3 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 4 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 5 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 6 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 7 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 8 */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* 9 */    0,    0, CALC,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* A */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* B */    0,    0,    0, NEXT, PREV,    0,    0,    0, EJCT,    0,    0,    0,    0,    0,    0,    0,
+    /* C */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, PLAY,    0,    0,
+    /* D */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
+    /* E */    0,    0, MUTE,    0,    0,    0,    0,    0,    0,  VUP, VDWN,    0,    0,    0,    0,    0,
+    /* F */    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0
+};
 
 // Send the sequence of keypresses corresponding to pressing and releasing
 // a single key
@@ -20,12 +45,6 @@
     emit((fd), (EV_SYN), (SYN_REPORT), 0);\
     emit((fd), (EV_KEY), (input_key), 0);\
     emit((fd), (EV_SYN), (SYN_REPORT), 0)
-
-// Send specific key actions
-#define KINESIS_MUTE(fd) KINESIS_SEND_KEY(KEY_MUTE, (fd))
-#define KINESIS_QUIETER(fd) KINESIS_SEND_KEY(KEY_VOLUMEDOWN, (fd))
-#define KINESIS_LOUDER(fd) KINESIS_SEND_KEY(KEY_VOLUMEUP, (fd))
-#define KINESIS_CALC(fd) KINESIS_SEND_KEY(KEY_CALC, (fd))
 
 // Send a single uinput event
 void emit(int fd, int type, int code, int val) {
@@ -68,21 +87,12 @@ void watch(int rawfd) {
         perror("Unable to configure virtual keyboard");
         exit(8);
     }
-    if (ioctl(fd, UI_SET_KEYBIT, KEY_MUTE) < 0) {
-        perror("Unable to configure virtual mute key");
-        exit(8);
-    }
-    if (ioctl(fd, UI_SET_KEYBIT, KEY_CALC) < 0) {
-        perror("Unable to configure virtual calc key");
-        exit(8);
-    }
-    if (ioctl(fd, UI_SET_KEYBIT, KEY_VOLUMEDOWN) < 0) {
-        perror("Unable to configure virtual volume down key");
-        exit(8);
-    }
-    if (ioctl(fd, UI_SET_KEYBIT, KEY_VOLUMEUP) < 0) {
-        perror("Unable to configure virtual volume up key");
-        exit(8);
+
+    for (int i = 0; i < 256; i++) {
+        if (mapping[i] && ioctl(fd, UI_SET_KEYBIT, mapping[i]) < 0) {
+            fprintf(stderr, "Unable to configure virtual key ID 0x%x: %s\n", mapping[i], strerror(errno));
+            exit(8);
+        }
     }
 
     // Configure virtual device
@@ -109,29 +119,21 @@ void watch(int rawfd) {
     }
 
     unsigned char data[KINESIS_PACKET_SIZE];
+    unsigned char key;
+
     memset(data, 0, sizeof(data));
     while (1) {
         if (read(rawfd, data, sizeof(data)) < 0) {
             perror("Error reading raw device");
             break;
         }
-        switch (data[1]) {
-            case HID_UID_MUTE:
-                KINESIS_MUTE(fd);
-                break;
-            case HID_UID_VOL_DOWN:
-                KINESIS_QUIETER(fd);
-                break;
-            case HID_UID_VOL_UP:
-                KINESIS_LOUDER(fd);
-                break;
-            case HID_UID_CALC:
-                KINESIS_CALC(fd);
-                break;
-            case 0:
-                break;
-            default:
-                printf("Unknown HID Usage ID: 0x%x\n", data[1]);
+
+        key = mapping[data[1]];
+        if (key) {
+            KINESIS_SEND_KEY(key, fd);
+        }
+        else if (data[1]) {
+            printf("Unknown HID Usage ID: 0x%x\n", data[1]);
         }
     }
 
@@ -151,8 +153,8 @@ int main(int argc, char* argv[]) {
     int rawfd;
     printf("Unofficial kinesis userspace driver\n");
     if (argc < 2) {
-	printf("Usage: %s <device>\n", argv[0]);
-	exit(1);
+        printf("Usage: %s <device>\n", argv[0]);
+        exit(1);
     }
     devpath = argv[1];
 
