@@ -29,7 +29,7 @@ script: ./sort-and-run.sh.template directory
 # Add a uinput user to the system
 group:
 	$(GROUPADD_PATH) -f uinput
-	adduser --system --quiet --ingroup uinput uinput
+	adduser --system --quiet --no-create-home --shell /bin/false --ingroup uinput uinput
 
 # Ensure the existence of a directory within the prefix location
 directory:
