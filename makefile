@@ -29,14 +29,16 @@ script: ./sort-and-run.sh.template directory
 # Add a uinput user to the system
 group:
 	$(GROUPADD_PATH) -f uinput
-	adduser --system --quiet --no-create-home --shell /bin/false --ingroup uinput uinput
+	id -u uinput > /dev/null 2>&1 || useradd --system --no-create-home --shell /bin/false -g uinput uinput > /dev/null
 
 # Ensure the existence of a directory within the prefix location
 directory:
 	mkdir $(INSTALLPATH) || true # ensure doesn't crash if already exists
 
-# Copy the binary to its new home
+# Copy the binary to its new home. Unlink any existing file first in case the
+# service is already running.
 binary: directory kfreestyle2d
+	rm -f $(INSTALLPATH)/kfreestyle2d
 	cp kfreestyle2d $(INSTALLPATH)/kfreestyle2d
 	chgrp $(GROUP) $(INSTALLPATH)/kfreestyle2d
 
