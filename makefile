@@ -50,7 +50,7 @@ refresh:
 
 # Insert the uinput kernel module and ensure that it is inserted on startup
 module:
-	echo "uinput" >> /etc/modules
+	grep -e "uinput" /etc/modules > /dev/null 2>&1 || echo "uinput" >> /etc/modules
 	modprobe uinput
 	
 install: group systemd udev-rule script binary module refresh
