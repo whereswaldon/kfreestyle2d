@@ -10,9 +10,9 @@ GROUPADD_PATH = /usr/sbin/groupadd
 kfreestyle2d: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o kfreestyle2d
 
-systemd: kfreestyle2d.service.template
-	cat kfreestyle2d.service.template | sed 's|<<<PREFIX>>>|$(PREFIX)|g' \
-	| sed 's|<<<GROUP>>>|$(GROUP)|g' > /etc/systemd/system/kfreestyle2d.service
+systemd: kfreestyle2d@.service.template
+	cat kfreestyle2d@.service.template | sed 's|<<<PREFIX>>>|$(PREFIX)|g' \
+	| sed 's|<<<GROUP>>>|$(GROUP)|g' > /etc/systemd/system/kfreestyle2d@.service
 
 # Create a copy of the udev rules 
 udev-rule: ./99-kfreestyle2d.rules.template
