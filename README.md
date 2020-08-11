@@ -9,6 +9,16 @@ F8-F11 that do not work in Linux. This is a simple program that enables
 those keys. If you care how it works, keep reading. If not, skip to the
 Build instructions.
 
+## Origin
+
+I spent a weekend digging into how this keyboard sent input for these multimedia
+keys. I documented the process in a series of blog posts:
+
+- [Part 1 - Debugging the problem](https://waldon.blog/2017/10/31/kinesis-freestyle-2-and-linux-part-1-debugging/)
+- [Part 2 - Fix it in userspace](https://waldon.blog/2017/10/31/kinesis-freestyle-2-and-linux-part-2-the-userspace-fix/)
+- [Part 3 - Permissions](https://waldon.blog/2017/11/15/kinesis-freestyle-2-and-linux-part-3-permissions/)
+- [Part 4 - Automation](https://waldon.blog/2018/02/20/kinesis-freestyle-2-and-linux-part-4-automation/)
+
 ## Supported Systems
 
 `kfreestyle2d` itself only depends on the Linux kernel. If you run Linux with
