@@ -1,5 +1,6 @@
 [Unit]
 Description=Userspace driver for Kinesis Freestyle 2 Keyboard
+After=dev-systemd-user-sessions.service
 
 [Service]
 Type=simple
