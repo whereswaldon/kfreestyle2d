@@ -19,13 +19,6 @@ udev-rule: ./99-kfreestyle2d.rules.template
 	cat 99-kfreestyle2d.rules.template | sed 's|<<<GROUP>>>|$(GROUP)|g' \
 	> /etc/udev/rules.d/99-kfreestyle2d.rules
 
-# Create a copy of the script in the prefix directory
-script: ./sort-and-run.sh.template directory
-	cat ./sort-and-run.sh.template | sed 's|<<<PREFIX>>>|$(PREFIX)|g' \
-	> $(INSTALLPATH)/sort-and-run.sh
-	chmod +x $(INSTALLPATH)/sort-and-run.sh
-	chgrp $(GROUP) $(INSTALLPATH)/sort-and-run.sh
-
 # Add a uinput user to the system
 group:
 	$(GROUPADD_PATH) -f uinput
@@ -53,5 +46,5 @@ module:
 	grep -e "uinput" /etc/modules > /dev/null 2>&1 || echo "uinput" >> /etc/modules
 	modprobe uinput
 	
-install: group systemd udev-rule script binary module refresh
+install: group systemd udev-rule binary module refresh
 	
