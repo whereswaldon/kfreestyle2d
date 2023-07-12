@@ -1,5 +1,6 @@
 [Unit]
 Description=Userspace driver for Kinesis Freestyle 2 Keyboard
+After=uinput-load.service
 
 [Service]
 Type=simple

@@ -1,0 +1,9 @@
+[Unit]
+Description=Load uinput kernel module
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/modprobe uinput
+
+[Install]
+WantedBy=sysinit.target
