@@ -14,6 +14,9 @@ systemd: kfreestyle2d.service.template
 	cat kfreestyle2d.service.template | sed 's|<<<PREFIX>>>|$(PREFIX)|g' \
 	| sed 's|<<<GROUP>>>|$(GROUP)|g' > /etc/systemd/system/kfreestyle2d.service
 
+systemd-uinput: uinput-load.service.template
+	cat uinput-load.service.template > /etc/systemd/system/uinput-load.service
+
 # Create a copy of the udev rules 
 udev-rule: ./99-kfreestyle2d.rules.template
 	cat 99-kfreestyle2d.rules.template | sed 's|<<<GROUP>>>|$(GROUP)|g' \
@@ -37,6 +40,7 @@ binary: directory kfreestyle2d
 
 # Make systemd and udev notice their new configurations
 refresh:
+	systemctl enable uinput-load
 	systemctl daemon-reload
 	udevadm control --reload
 	udevadm trigger
@@ -46,5 +50,5 @@ module:
 	grep -e "uinput" /etc/modules > /dev/null 2>&1 || echo "uinput" >> /etc/modules
 	modprobe uinput
 	
-install: group systemd udev-rule binary module refresh
+install: group systemd systemd-uinput udev-rule binary module refresh
 	
