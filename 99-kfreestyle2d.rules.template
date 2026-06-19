@@ -1,8 +1,0 @@
-# Make uinput device read/write
-KERNEL=="uinput", GROUP="<<<GROUP>>>", MODE:="0660"
-
-# Identify Kinesis products
-KERNEL=="hidraw[0-9]*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="058f", ATTRS{idProduct}=="9410", ENV{KINESIS_PRODUCT}="freestyle2"
-
-# Make Freestyle2 Fn keys readable
-ENV{KINESIS_PRODUCT}=="freestyle2", KERNEL=="hidraw[0-9]*", SUBSYSTEM=="hidraw", ATTRS{bInterfaceNumber}=="01", MODE:="0660", GROUP="<<<GROUP>>>", SYMLINK="kfreestyle2-fn", RUN+="/bin/systemctl --no-block start kfreestyle2d.service"

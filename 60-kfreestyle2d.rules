@@ -1,0 +1,5 @@
+# Identify Kinesis products
+KERNEL=="hidraw[0-9]*", SUBSYSTEM=="hidraw", ATTRS{idVendor}=="058f", ATTRS{idProduct}=="9410", ENV{KINESIS_PRODUCT}="freestyle2"
+
+# Make Freestyle2 Fn keys readable
+ENV{KINESIS_PRODUCT}=="freestyle2", KERNEL=="hidraw[0-9]*", SUBSYSTEM=="hidraw", ATTRS{bInterfaceNumber}=="01", TAG+="systemd", TAG+="uaccess", ENV{ID_MODEL_FROM_DATABASE}="Kinesis Freestyle 2", ENV{SYSTEMD_USER_WANTS}+="kfreestyle2d@$name.service"

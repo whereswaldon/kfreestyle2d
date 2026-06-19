@@ -4,28 +4,20 @@ OBJS = k.o
 
 PREFIX = /usr/local/share
 INSTALLPATH = $(PREFIX)/kfreestyle2d/
-GROUP = uinput
-GROUPADD_PATH = /usr/sbin/groupadd
 
 kfreestyle2d: $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o kfreestyle2d
 
-systemd: kfreestyle2d.service.template
-	cat kfreestyle2d.service.template | sed 's|<<<PREFIX>>>|$(PREFIX)|g' \
-	| sed 's|<<<GROUP>>>|$(GROUP)|g' > /etc/systemd/system/kfreestyle2d.service
+systemd: kfreestyle2d@.service.template
+	cat kfreestyle2d@.service.template | sed 's|<<<PREFIX>>>|$(PREFIX)|g' \
+	| sed 's|<<<GROUP>>>|$(GROUP)|g' > /etc/systemd/system/kfreestyle2d@.service
 
 systemd-uinput: uinput-load.service.template
 	cat uinput-load.service.template > /etc/systemd/system/uinput-load.service
 
 # Create a copy of the udev rules 
-udev-rule: ./99-kfreestyle2d.rules.template
-	cat 99-kfreestyle2d.rules.template | sed 's|<<<GROUP>>>|$(GROUP)|g' \
-	> /etc/udev/rules.d/99-kfreestyle2d.rules
-
-# Add a uinput user to the system
-group:
-	$(GROUPADD_PATH) -f uinput
-	id -u uinput > /dev/null 2>&1 || useradd --system --no-create-home --shell /bin/false -g uinput uinput > /dev/null
+udev-rule: ./60-kfreestyle2d.rules
+	cp 60-kfreestyle2d.rules /etc/udev/rules.d/60-kfreestyle2d.rules
 
 # Ensure the existence of a directory within the prefix location
 directory:

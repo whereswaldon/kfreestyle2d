@@ -56,16 +56,12 @@ To properly install `kfreestyle2d`, you should be able to simply run `sudo make 
 This will:
 
 - Create a directory (default is /usr/local/share/kfreestyle2d) to store the executable and script.
-- Create some udev rules in /etc/udev/rules.d/99-kfreestyle2d.rules
-- Create a new systemd service file in /etc/systemd/system/kfreestyle2d.service
+- Create some udev rules in /etc/udev/rules.d/50-kfreestyle2d.rules
+- Create a new systemd service file in /etc/systemd/user/kfreestyle2d.service
 
 Once those things are done, the driver should run automatically when you plug in the keyboard
 and should stop when you unplug it. If you have any problems running this command, please open an
 issue.
-
-Please note that the current setup only supports one Kinesis Freestyle 2. If you want to
-plug multiple Kinesis Freestyle 2 keyboards into the same computer, you'll need to 
-customize the automatic execution accordingly.
 
 ## Manual Run
 
